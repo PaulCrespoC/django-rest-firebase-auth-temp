@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from django.db import transaction
 from django.utils.translation import gettext as _
 from rest_framework import exceptions
 from rest_framework.authentication import BaseAuthentication, get_authorization_header
@@ -117,9 +118,9 @@ class FirebaseAuthentication(BaseFirebaseAuthentication):
     def get_user(self, uid: str) -> User:
         return User.objects.get(**{self.uid_field: uid})
 
+    @transaction.atomic()
     def create_user_from_firebase(
         self, uid: str, firebase_user: auth.UserRecord
     ) -> User:
         fields = {self.uid_field: uid, "email": firebase_user.email}
-
         return User.objects.create(**fields)
